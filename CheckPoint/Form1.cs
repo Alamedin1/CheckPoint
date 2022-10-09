@@ -43,7 +43,8 @@ namespace CheckPoint
            // DataBase.DataBaseCreate();
             ModBusServer.MdbServerStart();
             timer_listener_MDB.Start();
-            HTTPServer.HttpServerStart();
+            HTTPClient.HttpClient();
+            //HTTPServer.StartListen();
             timer_scaner.Start();
             timer_server.Start();
            
@@ -61,15 +62,23 @@ namespace CheckPoint
         }
         private void ServerIndic(object sender, EventArgs e)
         {
-            if (HTTPServer.HttpServerStart() && Stop_Button.BackColor == Color.Tomato)
+            //HTTPServer.flagHttp == true &&
+            if (HTTPClient.serverResponse != "" && Stop_Button.BackColor == Color.Tomato)
             {
-                HTTPServer.HttpRequestResponse();
                 Server_Indicator.BackColor = Color.YellowGreen;
             }
             else if (Stop_Button.BackColor == Color.Red)
             {
                 Server_Indicator.BackColor = Color.Gray;
             }            
+        }
+
+        private void WriteDataBase(object sender, EventArgs e) 
+        {
+            if (HTTPClient.serverResponse != "")
+            { 
+                
+            }
         }
             
 
@@ -95,7 +104,7 @@ namespace CheckPoint
             Start_Indicator.InnerColor = Color.Gray;
             Server_Indicator.BackColor = Color.Gray;
             BarcodeInfo_Text.Text = "";
-            HTTPServer.HttpServerStop();
+            //HTTPServer.HttpServerStop();
             ModBusServer.MdbServerStop();
             
         }
@@ -135,7 +144,6 @@ namespace CheckPoint
         {
 
         }
-
 
         private void Scaner_Indicator_Paint(object sender, PaintEventArgs e)
         {

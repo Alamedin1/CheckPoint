@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using static EasyModbus.ModbusServer;
@@ -69,7 +70,7 @@ namespace CheckPoint
 
                 SqliteCommand sqliteCommand = new SqliteCommand(sqlExpression);
                 sqliteCommand.Connection = connection;
-                //sqliteCommand.CommandText = "INSERT INTO Table_Barcode (Barcode) VALUES (@barcode)";
+                
 
                 SqliteParameter nameParam = new SqliteParameter("@barcode", barcode);
                 sqliteCommand.Parameters.Add(nameParam);
@@ -81,7 +82,7 @@ namespace CheckPoint
             }
             
         }
-        public static bool ChangedDB()
+        public static bool CheckBarcode(int barcode)
         {
             using (var connection = new SqliteConnection("Data Source=checkpoint.db"))
             {
@@ -89,19 +90,20 @@ namespace CheckPoint
                 SqliteCommand sqliteCommand = new SqliteCommand();
                 sqliteCommand.Connection = connection;
 
-                sqliteCommand.CommandText = "SELECT * FROM Table_Barcode"; //WHERE(Barcode) =
+                sqliteCommand.CommandText = String.Format("SELECT Barcode FROM Table_Barcode WHERE Barcode = '{0}'", barcode); ; //
                 using (SqliteDataReader reader = sqliteCommand.ExecuteReader())
                 {
                    
                     if (reader.HasRows) // если есть данные
                     {
-                        while (reader.Read())   // построчно считываем данные
+                        return true;
+                       /* while (reader.Read())   // построчно считываем данные
                         {
                             int Id = reader.GetInt32(0);
                             int Barcode = reader.GetInt32(1);
                             Console.WriteLine($"{Id} \t {Barcode}");
                         }
-                        return true;
+                        return true;*/
                     }
                     
                 }
@@ -118,7 +120,7 @@ namespace CheckPoint
         public int Id { get; set; }
         public string InfoBarcode { get; set; }
         public DateTime DateTime;
-        public bool ServerResponse { get; set; }
+        public string ServerResponse { get; set; }
     }
     public class ApplicationContext : DbContext
     {
@@ -131,10 +133,10 @@ namespace CheckPoint
             optionsBuilder.UseSqlite("Data Source=DataCheckPoint.db");
         }
 
-        public static void AddDatCheckPoint(int Barcode, bool ServerResponse) {
+        public static void AddDataCheckPoint(int Barcode, string ServerResponse) {
             using (ApplicationContext db = new ApplicationContext())
             {
-                // создаем два объекта User
+                // создаем объекты
                 DataCheckPoint infobarcode = new DataCheckPoint { InfoBarcode = Barcode.ToString()};
                 DataCheckPoint datetime = new DataCheckPoint { DateTime = DateTime.Now};
                 DataCheckPoint serverresponse = new DataCheckPoint { ServerResponse = ServerResponse };
@@ -156,13 +158,13 @@ namespace CheckPoint
             }
         }
 
-        public void HTTPServerResponse() 
+       /* public void HTTPServerResponse() 
         {
             if (HTTPServer.HttpRequestResponse()) 
             { 
                 
             }
-        }
+        }*/
       
 
     }

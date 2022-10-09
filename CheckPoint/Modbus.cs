@@ -19,8 +19,8 @@ namespace CheckPoint
             modbusServer.Listen();
         }
 
-        public static int NumberClients() {
-
+        public static int NumberClients()
+        { 
             return modbusServer.NumberOfConnections;
         }
 
