@@ -1,5 +1,6 @@
 ﻿using EasyModbus;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Win32;
 using System;
@@ -15,13 +16,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 namespace CheckPoint
 {
 
-    /*  public class DataCheckPoint 
-      {
-          public int Id { get; set; }
-          public string InfoBarcode { get; set; }
-          public DateTime DateTime;
-          public bool ServerResponse { get; set; }
-      }*/
+   
     public class DataBase
     {
         public static void DataBaseCreate()
@@ -72,8 +67,6 @@ namespace CheckPoint
             {
                 connection.Open();
 
-                
-
                 SqliteCommand sqliteCommand = new SqliteCommand(sqlExpression);
                 sqliteCommand.Connection = connection;
                 //sqliteCommand.CommandText = "INSERT INTO Table_Barcode (Barcode) VALUES (@barcode)";
@@ -117,6 +110,60 @@ namespace CheckPoint
             }
         }
 
+
+    }
+
+    public class DataCheckPoint
+    {
+        public int Id { get; set; }
+        public string InfoBarcode { get; set; }
+        public DateTime DateTime;
+        public bool ServerResponse { get; set; }
+    }
+    public class ApplicationContext : DbContext
+    {
+        public DbSet<DataCheckPoint> DataCheckPoint => Set<DataCheckPoint>();
+        public ApplicationContext() => Database.EnsureCreated();
+
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=DataCheckPoint.db");
+        }
+
+        public static void AddDatCheckPoint(int Barcode, bool ServerResponse) {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                // создаем два объекта User
+                DataCheckPoint infobarcode = new DataCheckPoint { InfoBarcode = Barcode.ToString()};
+                DataCheckPoint datetime = new DataCheckPoint { DateTime = DateTime.Now};
+                DataCheckPoint serverresponse = new DataCheckPoint { ServerResponse = ServerResponse };
+
+                // добавляем их в бд
+                db.DataCheckPoint.Add(infobarcode);
+                db.DataCheckPoint.Add(datetime);
+                db.DataCheckPoint.Add(serverresponse);
+                db.SaveChanges();
+                Console.WriteLine("Объекты успешно сохранены");
+
+                // получаем объекты из бд и выводим на консоль
+                var datacheckpoint = db.DataCheckPoint.ToList();
+                Console.WriteLine("Список объектов:");
+                foreach (DataCheckPoint u in datacheckpoint)
+                {
+                    Console.WriteLine($"{u.Id}.{u.InfoBarcode} - {u.DateTime} - {u.ServerResponse}");
+                }
+            }
+        }
+
+        public void HTTPServerResponse() 
+        {
+            if (HTTPServer.HttpRequestResponse()) 
+            { 
+                
+            }
+        }
+      
 
     }
 }

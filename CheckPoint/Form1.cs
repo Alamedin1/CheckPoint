@@ -19,6 +19,7 @@ namespace CheckPoint
         static readonly Timer timer_scaner = new Timer();
         static readonly Timer timer = new Timer();
         static readonly Timer timer_listener_MDB = new Timer();
+        static readonly Timer timer_server = new Timer();
         static readonly int alarmCounter = 500;
         public Form1()
         {
@@ -29,6 +30,8 @@ namespace CheckPoint
             timer_scaner.Tick += new EventHandler(Scaner_Indicator_Paint);
             timer_listener_MDB.Interval = alarmCounter;
             timer_listener_MDB.Tick += new EventHandler(WriteBarcode);
+            timer_server.Interval = alarmCounter;
+            timer_server.Tick += new EventHandler(ServerIndic);
             //timer.server.Tick += new
         }
 
@@ -40,8 +43,10 @@ namespace CheckPoint
            // DataBase.DataBaseCreate();
             ModBusServer.MdbServerStart();
             timer_listener_MDB.Start();
-            //HTTP.HttpServer();
+            HTTPServer.HttpServerStart();
             timer_scaner.Start();
+            timer_server.Start();
+           
         }
         private void Scaner_Indicator_Paint(object sender, EventArgs e)
         {
@@ -55,13 +60,19 @@ namespace CheckPoint
             }
         }
         private void ServerIndic(object sender, EventArgs e)
-        { }
+        {
+            if (HTTPServer.HttpServerStart() && Stop_Button.BackColor == Color.Tomato)
+            {
+                HTTPServer.HttpRequestResponse();
+                Server_Indicator.BackColor = Color.YellowGreen;
+            }
+            else if (Stop_Button.BackColor == Color.Red)
+            {
+                Server_Indicator.BackColor = Color.Gray;
+            }            
+        }
             
 
-        private void BarcodeInfo_Text_TextChang(object sender, EventArgs e)
-        {
-            
-        }
         private void WriteBarcode(object sender, EventArgs e) 
         {
             if (ModBusServer.Barcode > 0)
@@ -77,13 +88,14 @@ namespace CheckPoint
             timer_scaner.Stop();
             timer.Stop();
             timer_listener_MDB.Stop();
+            timer_server.Stop();
             Stop_Button.BackColor = Color.Red;
             Start_Button.BackColor = Color.SpringGreen;
             Scaner_Indicator.BackColor = Color.Gray;
             Start_Indicator.InnerColor = Color.Gray;
             Server_Indicator.BackColor = Color.Gray;
             BarcodeInfo_Text.Text = "";
-            //HTTPServer.HttpServer();
+            HTTPServer.HttpServerStop();
             ModBusServer.MdbServerStop();
             
         }
@@ -99,6 +111,10 @@ namespace CheckPoint
             }
         }
 
+        private void BarcodeInfo_Text_TextChang(object sender, EventArgs e)
+        {
+
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
 
@@ -121,5 +137,9 @@ namespace CheckPoint
         }
 
 
+        private void Scaner_Indicator_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

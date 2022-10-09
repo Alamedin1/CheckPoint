@@ -15,10 +15,11 @@ namespace CheckPoint
         private static HttpListener listener = new HttpListener();
         public static void HttpServerStart()
         {
+            string varible_url = "@123";
             // установка адресов прослушки
-            listener.Prefixes.Add("http://127.0.0.1:8085/barcode/{id}"); // как указывать переменную @123 в URL
+            listener.Prefixes.Add("http://127.0.0.1:8085/barcode/" + varible_url); // как указывать переменную @123 в URL
             listener.Start();
-            Console.WriteLine("Ожмдание подключения...");
+            Console.WriteLine("Ожидание подключения...");
         }
         public static void HttpServerStop() 
         {
@@ -26,14 +27,32 @@ namespace CheckPoint
             listener.Stop();
             Console.WriteLine("Обработка подключений завершена");
         }
-        private void Recieve() // rquest есть состав //response состав
+        public static bool HttpRequestResponse() 
         {
-            listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
+            //if () 
+            //{
+                // метод GetContext блокирует текущий поток, ожидая получение запроса 
+                HttpListenerContext context = listener.GetContext();
+                HttpListenerRequest request = context.Request;
+                context.Response.StatusCode = 200;
+                // получаем объект ответа
+                HttpListenerResponse response = context.Response;
+                // создаем ответ
+                string responseStr = "true";
+                byte[] buffer = Encoding.UTF8.GetBytes(responseStr);
+                // получаем поток ответа и пишем в него ответ
+                response.ContentLength64 = buffer.Length;
+                Stream output = response.OutputStream;
+                output.Write(buffer, 0, buffer.Length);
+                // закрываем поток
+                output.Close();
+                return true;
+            //}
+            //return false;
+
+
         }
-        private void ListenerCallback(IAsyncResult result)
-        {
-            var context = listener.EndGetContext(result);
-            var request = context.Request;
+        
             /*
                 КАК ОТПРАВИТЬ ПОСЛЕ ПРОВЕРКИ ЗАПИСИ БАРКОДА ОТВЕТ HTTP КЛИЕНТУ TRUE!!?
                 СКОРРЕКТИРОВАТЬ SQL ПРОВЕРКА НАЛИЧИЯ БАРКОДА!
@@ -49,23 +68,7 @@ namespace CheckPoint
             //HttpListenerContext context = listener.GetContext();
             //HttpListenerRequest request = context.Request;
             // получаем объект ответа
-            if (DataBase.ChangedDB() == true)
-            {
-                var response = context.Response;
-                response.StatusCode = (int)HttpStatusCode.OK;
-                // создаем ответ
-                bool[] boolresponse;
-
-
-                // получаем поток ответа и пишем в него ответ
-                response.ContentLength64 = boolresponse;
-                Stream output = response.OutputStream;
-                output.Write(boolresponse, 0, boolresponse.ToString());
-
-                // закрываем поток
-                output.Close();
-            }
-        }
+           
     }   
 }
 
