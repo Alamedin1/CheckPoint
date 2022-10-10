@@ -17,7 +17,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 namespace CheckPoint
 {
 
-   
+
     public class DataBase
     {
         public static void DataBaseCreate()
@@ -25,7 +25,7 @@ namespace CheckPoint
             //string sqlExpression = "SELECT * FROM Barcode";
             using (var connection = new SqliteConnection("Data Source=checkpoint.db"))
             {
-                
+
                 connection.Open();
                 Console.WriteLine();
 
@@ -37,40 +37,20 @@ namespace CheckPoint
                 Console.WriteLine("DataBase created!");
 
                 connection.Close();
-               
-               
-
-               /* Console.WriteLine($"В таблицу Barcode добавлено объектов: {1}");
-
-                using (SqliteDataReader reader = sqliteCommand.ExecuteReader())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        while (reader.Read())   // построчно считываем данные
-                        {
-                            var Id = reader.GetValue(0);
-                            var Barcode = reader.GetValue(1);
-                            *//*var Date = reader.GetValue(2);
-                            var Server = reader.GetValue(3);*//*
-
-                            Console.WriteLine($"{Id} \t {Barcode}");
-                        }
-                    }
-                }*/
             }
-            
+
         }
 
         public static void AddBarcodeToDB(int barcode)
         {
             string sqlExpression = "INSERT INTO Table_Barcode (Barcode) VALUES (@barcode)";
-            using (var connection = new SqliteConnection("Data Source=checkpoint.db")) 
+            using (var connection = new SqliteConnection("Data Source=checkpoint.db"))
             {
                 connection.Open();
 
                 SqliteCommand sqliteCommand = new SqliteCommand(sqlExpression);
                 sqliteCommand.Connection = connection;
-                
+
 
                 SqliteParameter nameParam = new SqliteParameter("@barcode", barcode);
                 sqliteCommand.Parameters.Add(nameParam);
@@ -78,9 +58,9 @@ namespace CheckPoint
                 Console.WriteLine("Barcode added in database!, barcode:{0} ", barcode);
 
                 connection.Close();
-              
+
             }
-            
+
         }
         public static bool CheckBarcode(int barcode)
         {
@@ -93,19 +73,12 @@ namespace CheckPoint
                 sqliteCommand.CommandText = String.Format("SELECT Barcode FROM Table_Barcode WHERE Barcode = '{0}'", barcode); ; //
                 using (SqliteDataReader reader = sqliteCommand.ExecuteReader())
                 {
-                   
+
                     if (reader.HasRows) // если есть данные
                     {
                         return true;
-                       /* while (reader.Read())   // построчно считываем данные
-                        {
-                            int Id = reader.GetInt32(0);
-                            int Barcode = reader.GetInt32(1);
-                            Console.WriteLine($"{Id} \t {Barcode}");
-                        }
-                        return true;*/
                     }
-                    
+
                 }
                 connection.Close();
                 return false;
@@ -115,57 +88,117 @@ namespace CheckPoint
 
     }
 
+
+
+
+
     public class DataCheckPoint
     {
-        public int Id { get; set; }
-        public string InfoBarcode { get; set; }
-        public DateTime DateTime;
-        public string ServerResponse { get; set; }
-    }
-    public class ApplicationContext : DbContext
-    {
-        public DbSet<DataCheckPoint> DataCheckPoint => Set<DataCheckPoint>();
-        public ApplicationContext() => Database.EnsureCreated();
 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public static void DataBaseCreate()
         {
-            optionsBuilder.UseSqlite("Data Source=DataCheckPoint.db");
-        }
-
-        public static void AddDataCheckPoint(int Barcode, string ServerResponse) {
-            using (ApplicationContext db = new ApplicationContext())
+            using (var connection = new SqliteConnection("Data Source=DataCheck_Point.db"))
             {
-                // создаем объекты
-                DataCheckPoint infobarcode = new DataCheckPoint { InfoBarcode = Barcode.ToString()};
-                DataCheckPoint datetime = new DataCheckPoint { DateTime = DateTime.Now};
-                DataCheckPoint serverresponse = new DataCheckPoint { ServerResponse = ServerResponse };
 
-                // добавляем их в бд
-                db.DataCheckPoint.Add(infobarcode);
-                db.DataCheckPoint.Add(datetime);
-                db.DataCheckPoint.Add(serverresponse);
-                db.SaveChanges();
-                Console.WriteLine("Объекты успешно сохранены");
+                connection.Open();
+                Console.WriteLine();
 
-                // получаем объекты из бд и выводим на консоль
-                var datacheckpoint = db.DataCheckPoint.ToList();
-                Console.WriteLine("Список объектов:");
-                foreach (DataCheckPoint u in datacheckpoint)
+                SqliteCommand sqliteCommand = new SqliteCommand();
+                sqliteCommand.Connection = connection;
+                sqliteCommand.CommandText = "CREATE TABLE DataCheck_Point(Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, Barcode INTEGER NOT NULL, ServerResponse TEXT)";
+                sqliteCommand.ExecuteNonQuery();
+
+                Console.WriteLine("DataBase DataCheck_Point created!");
+
+                connection.Close();
+            }
+        }
+        //string serverResponse
+        public static void AddDataCheckPoint(int barcode, string serverResponse)
+        {
+            string sqlExpression = "INSERT INTO DataCheck_Point (Barcode, ServerResponse) VALUES (@barcode, @serverResponse)";
+            using (var connection = new SqliteConnection("Data Source=DataCheck_Point.db"))
+            {
+                connection.Open();
+
+                SqliteCommand sqliteCommand = new SqliteCommand(sqlExpression);
+                sqliteCommand.Connection = connection;
+
+
+                SqliteParameter barc = new SqliteParameter("@barcode", barcode);
+                sqliteCommand.Parameters.Add(barc);
+                SqliteParameter serverresponse = new SqliteParameter("@serverResponse", serverResponse);
+                sqliteCommand.Parameters.Add(serverresponse);
+                sqliteCommand.ExecuteNonQuery();
+                Console.WriteLine("Barcode added in database!, barcode:{0}, serverresponse:{1} ", barcode, serverresponse);
+
+                connection.Close();
+
+            }
+
+        }
+        public static bool CheckDataCheckPoint(int barcode, string serverResponse)
+        {
+            using (var connection = new SqliteConnection("Data Source=DataCheck_Point.db"))
+            {
+                connection.Open();
+                SqliteCommand sqliteCommand = new SqliteCommand();
+                sqliteCommand.Connection = connection;
+
+                sqliteCommand.CommandText = String.Format("SELECT Barcode FROM DataCheck_Point WHERE Barcode = '{0}', ServerResponse = '{1}'", barcode, serverResponse); ; //
+                using (SqliteDataReader reader = sqliteCommand.ExecuteReader())
                 {
-                    Console.WriteLine($"{u.Id}.{u.InfoBarcode} - {u.DateTime} - {u.ServerResponse}");
+
+                    if (reader.HasRows) // если есть данные
+                    {
+                        return true;
+                    }
+
                 }
+                connection.Close();
+                return false;
             }
         }
 
-       /* public void HTTPServerResponse() 
-        {
-            if (HTTPServer.HttpRequestResponse()) 
-            { 
-                
-            }
-        }*/
-      
+        /* public class ApplicationContext : DbContext
+         {
+             public DbSet<DataCheckPoint> DataCheckPoint => Set<DataCheckPoint>();
+             public ApplicationContext() => Database.EnsureCreated();
+
+
+             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+             {
+                 optionsBuilder.UseSqlite("Data Source=DataCheckPoint.db");
+             }
+
+             public static void AddDataCheckPoint(int Barcode, string ServerResponse)
+             {
+                 using (ApplicationContext db = new ApplicationContext())
+                 {
+                     // создаем объекты
+                     DataCheckPoint infobarcode = new DataCheckPoint { InfoBarcode = Barcode.ToString() };
+                     DataCheckPoint datetime = new DataCheckPoint { DateTime = DateTime.Now };
+                     DataCheckPoint serverresponse = new DataCheckPoint { ServerResponse = ServerResponse };
+
+                     // добавляем их в бд
+                     db.DataCheckPoint.Add(infobarcode);
+                     db.DataCheckPoint.Add(datetime);
+                     db.DataCheckPoint.Add(serverresponse);
+                     db.SaveChanges();
+                     Console.WriteLine("Объекты успешно сохранены");
+
+                     // получаем объекты из бд и выводим на консоль
+                     var datacheckpoint = db.DataCheckPoint.ToList();
+                     Console.WriteLine("Список объектов:");
+                     foreach (DataCheckPoint u in datacheckpoint)
+                     {
+                         Console.WriteLine($"{u.Id}.{u.InfoBarcode} - {u.DateTime} - {u.ServerResponse}");
+                     }
+                 }
+             }
+              }*/
+
+
 
     }
 }

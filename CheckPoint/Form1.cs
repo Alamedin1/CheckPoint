@@ -1,4 +1,5 @@
 ﻿using EasyModbus;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,8 @@ namespace CheckPoint
 {
     public partial class Form1 : Form
     {
+        
+       
         static readonly Timer timer_scaner = new Timer();
         static readonly Timer timer = new Timer();
         static readonly Timer timer_listener_MDB = new Timer();
@@ -31,7 +34,7 @@ namespace CheckPoint
             timer_listener_MDB.Interval = alarmCounter;
             timer_listener_MDB.Tick += new EventHandler(WriteBarcode);
             timer_server.Interval = alarmCounter;
-            timer_server.Tick += new EventHandler(ServerIndic);
+            timer_server.Tick += new EventHandler(WriteDataBase);
             //timer.server.Tick += new
         }
 
@@ -40,7 +43,8 @@ namespace CheckPoint
             Start_Button.BackColor = Color.Green;
             Stop_Button.BackColor = Color.Tomato;
             timer.Start();
-           // DataBase.DataBaseCreate();
+            DataBase.DataBaseCreate();
+            DataCheckPoint.DataBaseCreate();
             ModBusServer.MdbServerStart();
             timer_listener_MDB.Start();
             HTTPClient.HttpClient();
@@ -62,8 +66,7 @@ namespace CheckPoint
         }
         private void ServerIndic(object sender, EventArgs e)
         {
-            //HTTPServer.flagHttp == true &&
-            if (HTTPClient.serverResponse != "" && Stop_Button.BackColor == Color.Tomato)
+            if (HTTPClient.HttpClient() != null && Stop_Button.BackColor == Color.Tomato)
             {
                 Server_Indicator.BackColor = Color.YellowGreen;
             }
@@ -75,9 +78,11 @@ namespace CheckPoint
 
         private void WriteDataBase(object sender, EventArgs e) 
         {
-            if (HTTPClient.serverResponse != "")
-            { 
+            if (HTTPClient.HttpClient() != null && ModBusServer.Barcode > 0)
+            {
                 
+                DataCheckPoint.AddDataCheckPoint(ModBusServer.Barcode, HTTPClient.HttpClient());
+                ServerInfo_Text.Text = HTTPClient.HttpClient();
             }
         }
             
